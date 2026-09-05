@@ -104,34 +104,48 @@ runs:
         
         case "${{ inputs.variant }}" in
           MidoriSU-XX)
-            if [ "${{ inputs.hook_mode }}" = "hookless" ]; then
-              cat >> $DEFCONFIG <<-'EOF'
-        CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED=y
-        CONFIG_KSU_HOSTSREDIRECT=y
-        CONFIG_KSU_HACK_ARM64_BRANCH_LINK=y
-        EOF
-            else
-              cat >> $DEFCONFIG <<-'EOF'
+            case "${{ inputs.hook_mode }}" in
+              manual)
+                cat >> $DEFCONFIG <<-'EOF'
         CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED=y
         CONFIG_KSU_HOSTSREDIRECT=y
         # CONFIG_KSU_KPROBES_KSUD is not set
+        # CONFIG_KSU_HACK_ARM64_BRANCH_LINK is not set
+        # CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set
         EOF
-            fi
+                ;;
+              syscall-table|*syscall*|*tamper*)
+                cat >> $DEFCONFIG <<-'EOF'
+        CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED=y
+        CONFIG_KSU_HOSTSREDIRECT=y
+        CONFIG_KSU_TAMPER_SYSCALL_TABLE=y
+        # CONFIG_KSU_HACK_ARM64_BRANCH_LINK is not set
+        EOF
+                ;;
+              *)
+                cat >> $DEFCONFIG <<-'EOF'
+        CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED=y
+        CONFIG_KSU_HOSTSREDIRECT=y
+        CONFIG_KSU_HACK_ARM64_BRANCH_LINK=y
+        # CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set
+        EOF
+                ;;
+            esac
             ;;
           MidoriSU-RX)
-            if [ "${{ inputs.hook_mode }}" = "manual" ]; then
+            if [ "${{ inputs.hook_mode }}" = "tracepoint" ]; then
+              cat >> $DEFCONFIG <<-'EOF'
+        CONFIG_KSU_TOOLKIT_SUPPORT=y
+        CONFIG_KSU_TRACEPOINT_HOOK=y
+        # CONFIG_KSU_MANUAL_HOOK is not set
+        EOF
+            else
               cat >> $DEFCONFIG <<-'EOF'
         CONFIG_KSU_TOOLKIT_SUPPORT=y
         CONFIG_KSU_MANUAL_HOOK=y
         # CONFIG_KSU_TRACEPOINT_HOOK is not set
         # CONFIG_KSU_MANUAL_HOOK_AUTO_SETUID_HOOK is not set
         # CONFIG_KSU_MANUAL_HOOK_AUTO_INITRC_HOOK is not set
-        EOF
-            else
-              cat >> $DEFCONFIG <<-'EOF'
-        CONFIG_KSU_TOOLKIT_SUPPORT=y
-        CONFIG_KSU_TRACEPOINT_HOOK=y
-        # CONFIG_KSU_MANUAL_HOOK is not set
         EOF
             fi
             if [ "${{ inputs.enable_susfs }}" = "true" ]; then

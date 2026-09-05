@@ -335,8 +335,8 @@ jobs:
 
       - name: Setup Manual Hooks (RX/XX only)
         if: >-
-          (inputs.variant == 'MidoriSU-XX' && inputs.hook_mode != 'hookless') ||
-          (inputs.variant == 'MidoriSU-RX' && inputs.hook_mode == 'manual')
+          (inputs.variant == 'MidoriSU-XX' && inputs.hook_mode == 'manual') ||
+          (inputs.variant == 'MidoriSU-RX' && inputs.hook_mode != 'tracepoint')
         working-directory: kernel_workspace/common
         run: |
           case "${{ inputs.variant }}" in
